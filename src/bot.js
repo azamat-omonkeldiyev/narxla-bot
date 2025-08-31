@@ -25,6 +25,7 @@ async function getPriceEstimation(data, lang) {
 Siz O'zbekiston uy-joy bozori mutaxassisisiz. Quyidagi uy haqida taxminiy narx ayting:
 - Manzil: ${data.address}
 - Maydon: ${data.area} kv.m
+- Xonalar soni: ${data.rooms}
 - Qavat: ${data.floor}
 - Jihozlar: Wi-Fi: ${data.wifi}, Muzlatgich: ${data.fridge}, Televizor: ${data.tv}, Konditsioner: ${data.ac}
 - Qo‘shimcha: ${data.extra}
@@ -40,6 +41,7 @@ Faqat taxminiy baho chiqaring.
 Вы эксперт по рынку недвижимости Узбекистана. Оцените квартиру:
 - Адрес: ${data.address}
 - Площадь: ${data.area} кв.м
+- Количество комнат: ${data.rooms}
 - Этаж: ${data.floor}
 - Удобства: Wi-Fi: ${data.wifi}, Холодильник: ${data.fridge}, Телевизор: ${data.tv}, Кондиционер: ${data.ac}
 - Дополнительно: ${data.extra}
@@ -113,9 +115,21 @@ const wizard = new Scenes.WizardScene(
     return ctx.wizard.next();
   },
 
-  // 4. Kvadrat metr -> qavat
+  // 4. Kvadrat metr -> xonalar soni
   async (ctx) => {
     ctx.wizard.state.userData.area = ctx.message.text;
+
+    if (ctx.wizard.state.lang === "uz") {
+      await ctx.reply("🛏 Xonalar sonini kiriting (masalan: 2):");
+    } else {
+      await ctx.reply("🛏 Введите количество комнат (например: 3):");
+    }
+    return ctx.wizard.next();
+  },
+
+  // 5. Xonalar soni -> qavat
+  async (ctx) => {
+    ctx.wizard.state.userData.rooms = ctx.message.text;
 
     if (ctx.wizard.state.lang === "uz") {
       await ctx.reply("🏢 Uy qavatini kiriting (masalan: 3/4):");
@@ -125,7 +139,7 @@ const wizard = new Scenes.WizardScene(
     return ctx.wizard.next();
   },
 
-  // 5. Qavatni tekshirish va keyingi bosqich
+  // 6. Qavatni tekshirish va keyingi bosqich
   async (ctx) => {
     const floorInput = ctx.message.text.trim();
     const regex = /^(\d{1,2})\/(\d{1,2})$/;
@@ -155,7 +169,7 @@ const wizard = new Scenes.WizardScene(
     return ctx.wizard.next();
   },
 
-  // 6. Jihozlar
+  // 7. Jihozlar
   async (ctx) => {
     const q = ctx.wizard.state.currentQuestion;
     const lang = ctx.wizard.state.lang;
@@ -198,7 +212,7 @@ const wizard = new Scenes.WizardScene(
     }
   },
 
-  // 7. Rasm qabul qilish
+  // 8. Rasm qabul qilish
   async (ctx) => {
     if (ctx.message?.photo) {
       const photoId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
@@ -253,7 +267,7 @@ const wizard = new Scenes.WizardScene(
     }
   },
 
-  // 8. Qo'shimcha ma'lumot + GPT hisoblash
+  // 9. Qo'shimcha ma'lumot + GPT hisoblash
   async (ctx) => {
     const note = ctx.message.text;
     ctx.wizard.state.userData.extra = note !== "❌" ? note : "";
